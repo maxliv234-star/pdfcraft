@@ -1996,3 +1996,12 @@
 	Created a PDF from {n} files; left out: {names}	PDF создан из файлов: {n}; пропущены: {names}
 	Created a PDF from the first {n} files	PDF создан из первых файлов: {n}
 	Go to page…	Перейти на страницу…
+	Translation verification statement	Заверение перевода
+	Editable statement for translations; not a notarial certificate or digital signature.	Настраиваемая отметка о переводе. Не является нотариальным удостоверением или электронной подписью.
+	Source language	Язык оригинала
+	Organization	Организация
+	Position	Должность
+	Full name	ФИО
+	Date	Дата
+	Copy statement and select text tool	Скопировать текст и выбрать инструмент добавления
+	Click the page, paste the statement, then add the director's signature separately.	Нажмите на страницу, вставьте текст и отдельно добавьте подпись директора.
