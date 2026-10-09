@@ -19,28 +19,7 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                     .color(t.text_muted)
                     .font(theme::regular(14.0)),
             );
-            ui.add_space(14.0);
-            egui::Frame::NONE
-                .fill(t.card)
-                .stroke(Stroke::new(1.0, t.border))
-                .corner_radius(CornerRadius::same(12))
-                .inner_margin(egui::Margin::same(14))
-                .show(ui, |ui| {
-                    ui.set_width(ui.available_width());
-                    ui.horizontal(|ui| {
-                        widgets::artcraft_mark(ui, 28.0);
-                        ui.vertical(|ui| {
-                            ui.label(egui::RichText::new(tl!("Join the ArtCraft community")).font(theme::semibold(15.0)));
-                            ui.label(egui::RichText::new(tl!("Get help, share feedback and follow development on Discord.")).color(t.text_muted));
-                        });
-                    });
-                    ui.add_space(8.0);
-                    if let Some(cmd) = widgets::community_links(ui) {
-                        app.execute(cmd);
-                    }
-                });
-            ui.add_space(22.0);
-
+            ui.add_space(20.0);
             egui::Frame::NONE
                 .fill(t.card)
                 .stroke(Stroke::new(1.0, t.border))
@@ -51,44 +30,36 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                     ui.label(egui::RichText::new(tl!("Recommended tools")).font(theme::semibold(15.0)));
                     ui.add_space(10.0);
                     ui.horizontal_wrapped(|ui| {
-                        ui.spacing_mut().item_spacing = vec2(14.0, 14.0);
+                        let gap = 14.0;
+                        ui.spacing_mut().item_spacing = vec2(gap, gap);
+                        let available = ui.available_width();
+                        let columns = if available >= 900.0 { 3.0 } else if available >= 620.0 { 2.0 } else { 1.0 };
+                        let card_width = ((available - (columns - 1.0) * gap) / columns - 2.0).max(190.0);
                         for id in RECOMMENDED {
                             let Some(g) = catalog::group(id) else { continue };
-                            let (rect, resp) = ui.allocate_exact_size(vec2(190.0, 104.0), Sense::click());
+                            let title = ui.fonts_mut(|f| f.layout(tl!(g.label).to_string(), theme::semibold(14.0), t.text, card_width - 64.0));
+                            let title_height = title.size().y.max(22.0);
+                            let blurb = g.sections.first().map(|section| {
+                                section.items.iter().take(3).map(|item| tl!(item.label)).collect::<Vec<_>>().join(" · ")
+                            }).unwrap_or_default();
+                            let description = ui.fonts_mut(|f| f.layout(blurb, theme::regular(12.5), t.text_muted, card_width - 28.0));
+                            let card_height = (76.0 + title_height + description.size().y).max(176.0);
+                            let (rect, resp) = ui.allocate_exact_size(vec2(card_width, card_height), Sense::click());
                             resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, tl!(g.label)));
-                            let fill = if resp.hovered() { t.hover } else { t.card };
-                            ui.painter().rect(rect, CornerRadius::same(10), fill, Stroke::new(1.0, t.divider), egui::StrokeKind::Inside);
+                            ui.painter().rect(rect, CornerRadius::same(10), if resp.hovered() { t.hover } else { t.card }, Stroke::new(1.0, t.divider), egui::StrokeKind::Inside);
                             let color = egui::Color32::from_rgb(g.hue[0], g.hue[1], g.hue[2]);
                             icons::paint(ui, Rect::from_min_size(rect.min + vec2(14.0, 14.0), vec2(22.0, 22.0)), g.icon, 21.0, color);
-                            ui.painter().text(rect.min + vec2(44.0, 25.0), Align2::LEFT_CENTER, tl!(g.label), theme::semibold(13.5), t.text);
-                            let blurb = g
-                                .sections
-                                .first()
-                                .map(|s| s.items.iter().take(3).map(|i| tl!(i.label)).collect::<Vec<_>>().join(" · "))
-                                .unwrap_or_default();
-                            let galley = ui.fonts_mut(|f| f.layout(blurb, theme::regular(11.5), t.text_muted, rect.width() - 28.0));
-                            ui.painter().galley(rect.min + vec2(14.0, 46.0), galley, t.text_muted);
-                            ui.painter().text(
-                                rect.left_bottom() + vec2(14.0, -14.0),
-                                Align2::LEFT_CENTER,
-                                tl!("Use now"),
-                                theme::medium(12.0),
-                                t.accent_text,
-                            );
+                            ui.painter().galley(rect.min + vec2(44.0, 14.0), title, t.text);
+                            ui.painter().galley(rect.min + vec2(14.0, 24.0 + title_height), description, t.text_muted);
+                            ui.painter().text(rect.left_bottom() + vec2(14.0, -22.0), Align2::LEFT_CENTER, tl!("Use now"), theme::medium(12.5), t.accent_text);
                             if resp.clicked() {
                                 app.left = LeftPanel::Tool(g.id);
                                 app.left_open = true;
                             }
                         }
-                        let (rect, resp) = ui.allocate_exact_size(vec2(170.0, 104.0), Sense::click());
+                        let (rect, resp) = ui.allocate_exact_size(vec2(card_width, 176.0), Sense::click());
                         resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, tl!("Open file")));
-                        ui.painter().rect(
-                            rect,
-                            CornerRadius::same(10),
-                            if resp.hovered() { t.hover } else { t.pasteboard },
-                            Stroke::new(1.0, t.divider),
-                            egui::StrokeKind::Inside,
-                        );
+                        ui.painter().rect(rect, CornerRadius::same(10), if resp.hovered() { t.hover } else { t.pasteboard }, Stroke::new(1.0, t.divider), egui::StrokeKind::Inside);
                         icons::paint(ui, Rect::from_center_size(rect.center() - vec2(0.0, 16.0), vec2(28.0, 28.0)), "folder-open", 26.0, t.icon);
                         ui.painter().text(rect.center() + vec2(0.0, 22.0), Align2::CENTER_CENTER, tl!("Open file"), theme::semibold(13.0), t.text);
                         if resp.clicked() {
