@@ -28,8 +28,8 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                     app.active = None;
                     app.combine_tab.focused = false;
                 }
-                // Keep the two 28-point buttons, Discord's text/padding and three gaps outside the scrolling tabs.
-                let controls_width = ui.fonts_mut(|f| f.layout_no_wrap("Discord".into(), theme::medium(13.0), t.text).size().x) + 106.0;
+                // Reserve room for the theme and keyboard-shortcut buttons.
+                let controls_width = 72.0;
                 let state = (app.active, app.views.len(), app.combine_showing());
                 let changed = ui.data_mut(|data| {
                     let id = ui.id().with("active_tab");
@@ -92,10 +92,6 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                     egui::Popup::menu(&response).show(|ui| theme_menu(app, ui));
                     if icons::button(ui, "circle-help", 28.0, false, tl!("Keyboard shortcuts")).clicked() {
                         app.dialog = Some(Dialog::Shortcuts);
-                    }
-                    // One click to the community, from anywhere in the app.
-                    if widgets::ghost_button(ui, "messages-square", "Discord").on_hover_text(pdfcraft_engine::links::DISCORD).clicked() {
-                        app.execute("help.discord");
                     }
                 });
             });
@@ -188,7 +184,7 @@ pub fn mode_bar(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                         }
                     });
                     ui.add_space(8.0);
-                    if widgets::search_box(ui, tl!("Find tools and commands"), 260.0).clicked() {
+                    if widgets::search_box(ui, tl!("Search"), 260.0).clicked() {
                         app.palette_open = true;
                     }
                 });
