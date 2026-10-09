@@ -1,0 +1,41 @@
+name: PdfCraft RU stable release
+
+# A reviewed commit is released only after a ru-v* tag is pushed.
+# The resulting GitHub Release stays a draft until the owner publishes it.
+on:
+  push:
+    tags:
+      - 'ru-v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ru-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-draft-release:
+    if: github.repository == 'maxliv234-star/pdfcraft'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ru-stable-release
+      - name: Test user interface library
+        run: cargo test -p pdfcraft-ui-egui --lib
+      - name: Build Windows x64 executable
+        run: cargo build --release -p pdfcraft
+      - name: Package portable EXE
+        shell: pwsh
+        run: |
+          Compress-Archive -LiteralPath 'target/release/pdfcraft.exe' -DestinationPath 'PdfCraft-RU-Windows-x64.zip' -Force
+      - name: Create draft release (requires manual publishing)
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = $env:GITHUB_REF_NAME
+          gh release create "$tag" 'PdfCraft-RU-Windows-x64.zip' --verify-tag --draft --title "PdfCraft RU $tag" --notes "Windows x64 portable build. Based on the open-source PdfCraft project. Review and test this draft before clicking Publish release."
