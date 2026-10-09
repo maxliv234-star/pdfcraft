@@ -496,7 +496,7 @@ pub fn right_panel(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                             ui.add(egui::TextEdit::singleline(&mut bookmark_query).desired_width(ui.available_width() - 32.0)).labelled_by(label.id);
                         response.widget_info(|| {
                             let mut info = egui::WidgetInfo::text_edit(ui.is_enabled(), &previous, &bookmark_query, "");
-                            info.label = Some(tl!("Search").to_string());
+                            info.label = Some(tl!("Search bookmarks").to_string());
                             info
                         });
                         if icons::button(ui, "x", 26.0, false, tl!("Clear")).clicked() {
