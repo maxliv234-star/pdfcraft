@@ -101,9 +101,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: EmbarkStudios/cargo-deny-action@v2
+      # Use a pinned native installer to avoid depending on Docker Hub image pulls.
+      - name: Install cargo-deny
+        uses: taiki-e/install-action@ab6895351a88b908e96a4697860d4ffea5e57dbe # v2
         with:
-          command: check
+          tool: cargo-deny
+      - name: Check dependency licences and advisories
+        run: cargo deny check
 
   fuzz:
     name: fuzz (mutation, 15 min)
