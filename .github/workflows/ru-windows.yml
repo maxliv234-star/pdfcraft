@@ -2,6 +2,8 @@ name: PdfCraft RU Windows build
 
 on:
   push:
+    branches: [feature/ru-edition, 'feature/ru-*']
+  pull_request:
     branches: [feature/ru-edition]
   workflow_dispatch:
 
