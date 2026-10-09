@@ -274,3 +274,32 @@ pub(crate) fn decode(v: &serde_json::Value) -> Vec<CustomStamp> {
         .map(|a| a.iter().filter_map(|x| serde_json::from_value::<CustomStamp>(x.clone()).ok()).filter(|s| s.data.len() <= MAX_STAMP_BYTES).collect())
         .unwrap_or_default()
 }
+
+
+#[cfg(test)]
+mod translation_statement_tests {
+    use super::TranslationStatementDraft;
+
+    #[test]
+    fn translation_statement_contains_signer_and_date() {
+        let d = TranslationStatementDraft {
+            from_language: "английского".into(),
+            organization: "ООО Пример".into(),
+            signer: "И. И. Иванов".into(),
+            position: "Директор".into(),
+            date: "09.10.2026".into(),
+        };
+        let text = d.text();
+        assert!(text.starts_with("ПЕРЕВОД ВЕРЕН"));
+        assert!(text.contains("ООО Пример"));
+        assert!(text.contains("Директор __________________ / И. И. Иванов"));
+        assert!(text.contains("Дата: 09.10.2026"));
+    }
+
+    #[test]
+    fn translation_statement_works_without_optional_fields() {
+        let text = TranslationStatementDraft::default().text();
+        assert!(text.contains("ПЕРЕВОД ВЕРЕН"));
+        assert!(text.contains("Директор"));
+    }
+}
