@@ -469,6 +469,8 @@ pub struct PdfCraftApp {
     /// The custom stamp library, and the stamp being created.
     pub custom_stamps: Vec<stamps_ui::CustomStamp>,
     pub stamp_draft: stamps_ui::StampDraft,
+    /// Pre-filled text for the translation verification helper.
+    pub translation_statement: stamps_ui::TranslationStatementDraft,
     /// PDF Optimizer choices.
     pub optimize_draft: OptimizeDraft,
     /// The running optimization (Optimize PDF ▸ Advanced optimization).
@@ -681,6 +683,7 @@ impl PdfCraftApp {
             image_import: None,
             custom_stamps: Vec::new(),
             stamp_draft: Default::default(),
+            translation_statement: Default::default(),
             optimize_draft: OptimizeDraft::default(),
             optimize_run: None,
             progress_notice: None,
