@@ -80,9 +80,7 @@ fn translation_statement_section(app: &mut PdfCraftApp, ui: &mut egui::Ui, t: &T
             copy = true;
         }
         ui.label(
-            egui::RichText::new(tl!("Click a page to place the prepared text; add the director's signature separately."))
-                .small()
-                .color(t.text_faint),
+            egui::RichText::new(tl!("Click a page to place the prepared text; add the director's signature separately.")).small().color(t.text_faint),
         );
     });
     if copy {
