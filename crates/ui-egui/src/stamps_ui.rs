@@ -58,27 +58,32 @@ fn translation_statement_section(app: &mut PdfCraftApp, ui: &mut egui::Ui, t: &T
     let mut copy = false;
     ui.collapsing(tl!("Translation verification statement"), |ui| {
         let draft = &mut app.translation_statement;
-        ui.label(egui::RichText::new(tl!("Editable statement for translations; not a notarial certificate or digital signature.")).small().color(t.text_muted));
-        egui::Grid::new("ru-translation-statement")
-            .num_columns(2)
-            .spacing([8.0, 8.0])
-            .show(ui, |ui| {
-                for (label, value) in [
-                    (tl!("Source language"), &mut draft.from_language),
-                    (tl!("Organization"), &mut draft.organization),
-                    (tl!("Position"), &mut draft.position),
-                    (tl!("Full name"), &mut draft.signer),
-                    (tl!("Date"), &mut draft.date),
-                ] {
-                    let caption = ui.label(label);
-                    ui.add(egui::TextEdit::singleline(value).desired_width(160.0)).labelled_by(caption.id);
-                    ui.end_row();
-                }
-            });
+        ui.label(
+            egui::RichText::new(tl!("Editable statement for translations; not a notarial certificate or digital signature."))
+                .small()
+                .color(t.text_muted),
+        );
+        egui::Grid::new("ru-translation-statement").num_columns(2).spacing([8.0, 8.0]).show(ui, |ui| {
+            for (label, value) in [
+                (tl!("Source language"), &mut draft.from_language),
+                (tl!("Organization"), &mut draft.organization),
+                (tl!("Position"), &mut draft.position),
+                (tl!("Full name"), &mut draft.signer),
+                (tl!("Date"), &mut draft.date),
+            ] {
+                let caption = ui.label(label);
+                ui.add(egui::TextEdit::singleline(value).desired_width(160.0)).labelled_by(caption.id);
+                ui.end_row();
+            }
+        });
         if ui.button(tl!("Copy statement and select text tool")).clicked() {
             copy = true;
         }
-        ui.label(egui::RichText::new(tl!("Click the page, paste the statement, then add the director's signature separately.")).small().color(t.text_faint));
+        ui.label(
+            egui::RichText::new(tl!("Click the page, paste the statement, then add the director's signature separately."))
+                .small()
+                .color(t.text_faint),
+        );
     });
     if copy {
         ui.ctx().copy_text(app.translation_statement.text());
@@ -87,7 +92,6 @@ fn translation_statement_section(app: &mut PdfCraftApp, ui: &mut egui::Ui, t: &T
         app.left_open = true;
     }
 }
-
 
 /// Stamp files larger than this aren't kept in the library (it lives in the app's settings).
 pub const MAX_STAMP_BYTES: usize = 4 << 20;
