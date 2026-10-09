@@ -1,0 +1,34 @@
+name: PdfCraft RU Windows build
+
+on:
+  push:
+    branches: [feature/ru-edition]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ru-windows-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-exe:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+      - name: Build PdfCraft RU
+        run: cargo build --release -p pdfcraft
+      - name: Upload Windows executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: PdfCraft-RU-Windows-x64
+          path: target/release/pdfcraft.exe
+          if-no-files-found: error
+          retention-days: 14
