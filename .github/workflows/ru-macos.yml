@@ -3,7 +3,10 @@ name: PdfCraft RU macOS (Apple Silicon)
 on:
   push:
     branches:
-      - 'feature/ru-ui-polish-and-releases'
+      - feature/ru-edition
+  pull_request:
+    branches:
+      - feature/ru-edition
   workflow_dispatch:
 
 permissions:
