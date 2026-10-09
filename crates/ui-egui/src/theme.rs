@@ -216,23 +216,14 @@ pub fn font_definitions_for(prefer_hans: bool) -> FontDefinitions {
     #[cfg(target_os = "windows")]
     {
         if let Ok(bytes) = std::fs::read(r"C:\Windows\Fonts\segoeui.ttf") {
-            fonts.font_data.insert(
-                "Segoe UI".to_owned(),
-                Arc::new(FontData::from_owned(bytes)),
-            );
+            fonts.font_data.insert("Segoe UI".to_owned(), Arc::new(FontData::from_owned(bytes)));
             fonts.families.entry(FontFamily::Proportional).or_default().insert(0, "Segoe UI".to_owned());
         }
 
         if let Ok(bytes) = std::fs::read(r"C:\Windows\Fonts\seguisb.ttf") {
-            fonts.font_data.insert(
-                "Segoe UI Semibold".to_owned(),
-                Arc::new(FontData::from_owned(bytes)),
-            );
+            fonts.font_data.insert("Segoe UI Semibold".to_owned(), Arc::new(FontData::from_owned(bytes)));
             for family in ["medium", "semibold"] {
-                fonts.families
-                    .entry(FontFamily::Name(family.into()))
-                    .or_default()
-                    .insert(0, "Segoe UI Semibold".to_owned());
+                fonts.families.entry(FontFamily::Name(family.into())).or_default().insert(0, "Segoe UI Semibold".to_owned());
             }
         }
     }
