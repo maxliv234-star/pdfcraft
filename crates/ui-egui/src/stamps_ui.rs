@@ -275,7 +275,6 @@ pub(crate) fn decode(v: &serde_json::Value) -> Vec<CustomStamp> {
         .unwrap_or_default()
 }
 
-
 #[cfg(test)]
 mod translation_statement_tests {
     use super::TranslationStatementDraft;
