@@ -76,17 +76,21 @@ fn translation_statement_section(app: &mut PdfCraftApp, ui: &mut egui::Ui, t: &T
                 ui.end_row();
             }
         });
-        if ui.button(tl!("Copy statement and select text tool")).clicked() {
+        if ui.button(tl!("Prepare statement and select text tool")).clicked() {
             copy = true;
         }
         ui.label(
-            egui::RichText::new(tl!("Click the page, paste the statement, then add the director's signature separately."))
+            egui::RichText::new(tl!("Click a page to place the prepared text; add the director's signature separately."))
                 .small()
                 .color(t.text_faint),
         );
     });
     if copy {
-        ui.ctx().copy_text(app.translation_statement.text());
+        let text = app.translation_statement.text();
+        ui.ctx().copy_text(text.clone());
+        if let Some((index, _)) = app.active_ids() {
+            app.views[index].content.pending_text = Some(text);
+        }
         app.quick_tool = QuickTool::AddText;
         app.left = crate::LeftPanel::Tool("edit");
         app.left_open = true;
