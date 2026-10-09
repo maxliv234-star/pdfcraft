@@ -33,26 +33,46 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                         let gap = 12.0;
                         ui.spacing_mut().item_spacing = vec2(gap, gap);
                         let available = ui.available_width();
-                        let columns = if available >= 900.0 { 3.0 } else if available >= 620.0 { 2.0 } else { 1.0 };
+                        let columns = if available >= 900.0 {
+                            3.0
+                        } else if available >= 620.0 {
+                            2.0
+                        } else {
+                            1.0
+                        };
                         let card_width = ((available - (columns - 1.0) * gap) / columns - 2.0).max(190.0);
                         for id in RECOMMENDED {
                             let Some(g) = catalog::group(id) else { continue };
                             let title = ui.fonts_mut(|f| f.layout(tl!(g.label).to_string(), theme::semibold(14.0), t.text, card_width - 64.0));
                             let title_height = title.size().y.max(22.0);
-                            let blurb = g.sections.first().map(|section| {
-                                section.items.iter().take(3).map(|item| tl!(item.label)).collect::<Vec<_>>().join(" · ")
-                            }).unwrap_or_default();
+                            let blurb = g
+                                .sections
+                                .first()
+                                .map(|section| section.items.iter().take(3).map(|item| tl!(item.label)).collect::<Vec<_>>().join(" · "))
+                                .unwrap_or_default();
                             let description = ui.fonts_mut(|f| f.layout(blurb, theme::regular(12.5), t.text_muted, card_width - 28.0));
                             // Reserve a separate bottom line for the action, even when translated text wraps.
                             let card_height = (56.0 + title_height + description.size().y).max(124.0);
                             let (rect, resp) = ui.allocate_exact_size(vec2(card_width, card_height), Sense::click());
                             resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, tl!(g.label)));
-                            ui.painter().rect(rect, CornerRadius::same(10), if resp.hovered() { t.hover } else { t.card }, Stroke::new(1.0, t.divider), egui::StrokeKind::Inside);
+                            ui.painter().rect(
+                                rect,
+                                CornerRadius::same(10),
+                                if resp.hovered() { t.hover } else { t.card },
+                                Stroke::new(1.0, t.divider),
+                                egui::StrokeKind::Inside,
+                            );
                             let color = egui::Color32::from_rgb(g.hue[0], g.hue[1], g.hue[2]);
                             icons::paint(ui, Rect::from_min_size(rect.min + vec2(14.0, 14.0), vec2(22.0, 22.0)), g.icon, 21.0, color);
                             ui.painter().galley(rect.min + vec2(44.0, 12.0), title, t.text);
                             ui.painter().galley(rect.min + vec2(14.0, 18.0 + title_height), description, t.text_muted);
-                            ui.painter().text(rect.left_bottom() + vec2(14.0, -20.0), Align2::LEFT_CENTER, tl!("Use now"), theme::medium(12.5), t.accent_text);
+                            ui.painter().text(
+                                rect.left_bottom() + vec2(14.0, -20.0),
+                                Align2::LEFT_CENTER,
+                                tl!("Use now"),
+                                theme::medium(12.5),
+                                t.accent_text,
+                            );
                             if resp.clicked() {
                                 app.left = LeftPanel::Tool(g.id);
                                 app.left_open = true;
@@ -60,7 +80,13 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                         }
                         let (rect, resp) = ui.allocate_exact_size(vec2(card_width, 124.0), Sense::click());
                         resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, tl!("Open file")));
-                        ui.painter().rect(rect, CornerRadius::same(10), if resp.hovered() { t.hover } else { t.pasteboard }, Stroke::new(1.0, t.divider), egui::StrokeKind::Inside);
+                        ui.painter().rect(
+                            rect,
+                            CornerRadius::same(10),
+                            if resp.hovered() { t.hover } else { t.pasteboard },
+                            Stroke::new(1.0, t.divider),
+                            egui::StrokeKind::Inside,
+                        );
                         icons::paint(ui, Rect::from_center_size(rect.center() - vec2(0.0, 16.0), vec2(28.0, 28.0)), "folder-open", 26.0, t.icon);
                         ui.painter().text(rect.center() + vec2(0.0, 22.0), Align2::CENTER_CENTER, tl!("Open file"), theme::semibold(14.0), t.text);
                         if resp.clicked() {
