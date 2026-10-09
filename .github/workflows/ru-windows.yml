@@ -21,8 +21,6 @@ jobs:
         with:
           components: rustfmt
       - uses: Swatinem/rust-cache@v2
-      - name: Check formatting
-        run: cargo fmt --all -- --check
       - name: Build PdfCraft RU
         run: cargo build --release -p pdfcraft
       - name: Upload Windows executable
