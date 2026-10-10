@@ -490,6 +490,16 @@ mod tests {
         assert!(has(JA(), "Save") && !has(Lang::EN, "Save"));
     }
 
+    /// PDF certification is a signing action, not a certificate object. Keep
+    /// Russian menu labels consistent with the existing Certify action.
+    #[test]
+    fn russian_pdf_certification_labels_are_actions() {
+        let ru = Lang::from_code("ru").expect("ru registered");
+        assert_eq!(tr(ru, "Certify"), "Сертифицировать");
+        assert_eq!(tr(ru, "Certify (visible signature)"), "Сертифицировать (видимая подпись)");
+        assert_eq!(tr(ru, "Certify (invisible signature)"), "Сертифицировать (невидимая подпись)");
+    }
+
     #[test]
     fn catalog_kinds_are_parsed_and_looked_up() {
         let (c, errors) = Catalog::parse(

@@ -225,8 +225,8 @@
 	Add a date field	Добавить поле даты
 	Add a digital signature field	Добавить поле цифровой подписи
 	Digitally sign	Подписать цифровой подписью
-	Certify (visible signature)	Сертификат (видимая подпись)
-	Certify (invisible signature)	Сертификат (невидимая подпись)
+	Certify (visible signature)	Сертифицировать (видимая подпись)
+	Certify (invisible signature)	Сертифицировать (невидимая подпись)
 	Validate all signatures	Проверить все подписи
 	Signatures panel	Панель подписей
 	Fill & Sign: add text	Заполнить и подписать: добавить текст
