@@ -14,7 +14,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  preflight:
+    if: github.repository == 'maxliv234-star/pdfcraft'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Require tag on current tested RU edition branch
+        shell: bash
+        run: |
+          git fetch --no-tags origin refs/heads/feature/ru-edition:refs/remotes/origin/feature/ru-edition
+          tagged="$(git rev-parse HEAD)"
+          branch_head="$(git rev-parse refs/remotes/origin/feature/ru-edition)"
+          if [ "$tagged" != "$branch_head" ]; then
+            echo "::error::Tag must point to the current feature/ru-edition head after CI and manual QA"
+            exit 1
+          fi
+
   windows:
+    needs: [preflight]
     if: github.repository == 'maxliv234-star/pdfcraft'
     runs-on: windows-latest
     steps:
@@ -41,6 +60,7 @@ jobs:
           if-no-files-found: error
 
   macos:
+    needs: [preflight]
     if: github.repository == 'maxliv234-star/pdfcraft'
     runs-on: macos-15
     timeout-minutes: 120
@@ -57,6 +77,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: ru-release-macos
+      - name: Test PDF interface library
+        run: cargo test --locked -p pdfcraft-ui-egui --lib
       - name: Package Apple Silicon DMG
         run: bash packaging/macos/package.sh --arch aarch64
       - uses: actions/upload-artifact@v4

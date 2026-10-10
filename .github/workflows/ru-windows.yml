@@ -23,8 +23,10 @@ jobs:
         with:
           components: rustfmt
       - uses: Swatinem/rust-cache@v2
+      - name: Test PdfCraft RU UI library
+        run: cargo test --locked -p pdfcraft-ui-egui --lib
       - name: Build PdfCraft RU
-        run: cargo build --release -p pdfcraft
+        run: cargo build --release --locked -p pdfcraft
       - name: Upload Windows executable
         uses: actions/upload-artifact@v4
         with:
