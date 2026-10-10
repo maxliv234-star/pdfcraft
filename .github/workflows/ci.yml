@@ -55,6 +55,26 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
+      - name: Test RU release CI gate against green and red run histories
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Latest attempt wins; successful checks from other branches or PRs
+          # must never make an untested release commit appear safe.
+          sample='{"workflow_runs":[
+            {"head_branch":"feature/ru-edition","event":"push","name":"CI","run_number":8,"run_attempt":1,"conclusion":"failure"},
+            {"head_branch":"feature/ru-edition","event":"push","name":"CI","run_number":8,"run_attempt":2,"conclusion":"success"},
+            {"head_branch":"feature/ru-ui-polish-and-releases","event":"push","name":"CI","run_number":9,"run_attempt":1,"conclusion":"failure"},
+            {"head_branch":"feature/ru-edition","event":"push","name":"PdfCraft RU Windows build","run_number":5,"run_attempt":1,"conclusion":"failure"},
+            {"head_branch":"feature/ru-edition","event":"push","name":"PdfCraft RU macOS (Apple Silicon)","run_number":5,"run_attempt":1,"conclusion":null},
+            {"head_branch":"feature/ru-edition","event":"pull_request","name":"PdfCraft RU macOS (Apple Silicon)","run_number":6,"run_attempt":1,"conclusion":"success"}]}'
+          query() { jq -r --arg flow "$1" -f .github/scripts/ru-release-ci.jq <<<"$sample"; }
+          test "$(query CI)" = "success"
+          test "$(query 'PdfCraft RU Windows build')" = "failure"
+          test "$(query 'PdfCraft RU macOS (Apple Silicon)')" = "missing"
+          test "$(query 'No such workflow')" = "missing"
+
       - name: Format
         if: runner.os == 'Linux'
         run: cargo fmt --all -- --check

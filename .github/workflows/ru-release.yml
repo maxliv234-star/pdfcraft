@@ -48,11 +48,7 @@ jobs:
             exit 1
           fi
           for flow in "CI" "PdfCraft RU Windows build" "PdfCraft RU macOS (Apple Silicon)"; do
-            result="$(jq -r --arg flow "$flow" '
-              [.workflow_runs[] |
-                select(.head_branch == "feature/ru-edition" and .event == "push" and .name == $flow)]
-              | sort_by(.run_number, .run_attempt) | last | .conclusion // "missing"
-            ' <<<"$runs")"
+            result="$(jq -r --arg flow "$flow" -f .github/scripts/ru-release-ci.jq <<<"$runs")"
             if [ "$result" != "success" ]; then
               echo "::error::Release commit $tagged: $flow is $result (must be success on feature/ru-edition)"
               exit 1
