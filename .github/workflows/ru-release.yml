@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  actions: read # Read completed CI/build workflow runs for this exact release SHA.
 
 concurrency:
   group: ru-draft-release-${{ github.ref }}
@@ -31,6 +32,33 @@ jobs:
             echo "::error::Tag must point to the current feature/ru-edition head after CI and manual QA"
             exit 1
           fi
+      - name: Require successful full CI and both desktop builds for this commit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          tagged="$(git rev-parse HEAD)"
+          # Check only push runs on the actual integration branch, not PR
+          # merge refs or successful runs from a previous commit.
+          runs="$(gh api "repos/$GH_REPO/actions/runs?head_sha=$tagged&per_page=100")"
+          if jq -e '.total_count > 100' <<<"$runs" >/dev/null; then
+            echo "::error::More than 100 runs for release commit; refuse an incomplete CI check"
+            exit 1
+          fi
+          for flow in "CI" "PdfCraft RU Windows build" "PdfCraft RU macOS (Apple Silicon)"; do
+            result="$(jq -r --arg flow "$flow" '
+              [.workflow_runs[] |
+                select(.head_branch == "feature/ru-edition" and .event == "push" and .name == $flow)]
+              | sort_by(.run_number, .run_attempt) | last | .conclusion // "missing"
+            ' <<<"$runs")"
+            if [ "$result" != "success" ]; then
+              echo "::error::Release commit $tagged: $flow is $result (must be success on feature/ru-edition)"
+              exit 1
+            fi
+          done
+          echo "Full CI, Windows x64 and macOS Apple Silicon succeeded for $tagged"
 
   windows:
     needs: [preflight]
