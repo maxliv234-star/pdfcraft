@@ -148,6 +148,23 @@ pub const SYSTEM_FALLBACK: &str = "system-fallback";
 pub fn installed_font_definitions(prefer_hans: bool) -> FontDefinitions {
     #[cfg_attr(target_arch = "wasm32", expect(unused_mut))]
     let mut fonts = font_definitions_for(prefer_hans);
+    // Windows faces are installed only at runtime. Keeping them out of
+    // `font_definitions_for` makes bundled/script fallback order reproducible in tests,
+    // builds and screenshots on every OS. Never redistribute the font bytes.
+    #[cfg(target_os = "windows")]
+    if std::env::var_os("PDFCRAFT_SYSTEM_FONTS").is_none_or(|value| value != "0") {
+        if let Ok(bytes) = std::fs::read(r"C:\Windows\Fonts\segoeui.ttf") {
+            fonts.font_data.insert("Segoe UI".to_owned(), Arc::new(FontData::from_owned(bytes)));
+            fonts.families.entry(FontFamily::Proportional).or_default().push("Segoe UI".to_owned());
+        }
+
+        if let Ok(bytes) = std::fs::read(r"C:\Windows\Fonts\seguisb.ttf") {
+            fonts.font_data.insert("Segoe UI Semibold".to_owned(), Arc::new(FontData::from_owned(bytes)));
+            for family in ["medium", "semibold"] {
+                fonts.families.entry(FontFamily::Name(family.into())).or_default().push("Segoe UI Semibold".to_owned());
+            }
+        }
+    }
     #[cfg(not(target_arch = "wasm32"))]
     if let Some(data) = crate::system_fonts::fallback() {
         fonts.font_data.insert(SYSTEM_FALLBACK.to_owned(), data);
@@ -222,23 +239,6 @@ pub fn font_definitions_for(prefer_hans: bool) -> FontDefinitions {
         let mut stack = vec![primary.to_owned()];
         stack.extend(fallback.iter().cloned());
         fonts.families.insert(FontFamily::Name(fam.into()), stack);
-    }
-    // Windows system faces are optional last-resort fallbacks; do not override the
-    // cross-platform Ubuntu Light body and Inter heading choices.
-    // System fonts are read only at runtime and are never redistributed.
-    #[cfg(target_os = "windows")]
-    {
-        if let Ok(bytes) = std::fs::read(r"C:\Windows\Fonts\segoeui.ttf") {
-            fonts.font_data.insert("Segoe UI".to_owned(), Arc::new(FontData::from_owned(bytes)));
-            fonts.families.entry(FontFamily::Proportional).or_default().push("Segoe UI".to_owned());
-        }
-
-        if let Ok(bytes) = std::fs::read(r"C:\Windows\Fonts\seguisb.ttf") {
-            fonts.font_data.insert("Segoe UI Semibold".to_owned(), Arc::new(FontData::from_owned(bytes)));
-            for family in ["medium", "semibold"] {
-                fonts.families.entry(FontFamily::Name(family.into())).or_default().push("Segoe UI Semibold".to_owned());
-            }
-        }
     }
     fonts
 }
@@ -338,6 +338,18 @@ mod tests {
         assert_eq!(stack.iter().filter(|name| name.as_str() == "Inter").count(), 1);
         if let Some(cjk) = stack.iter().position(|name| name.starts_with("BIZ UDPGothic")) {
             assert!(inter < cjk, "Inter must precede optional Japanese fallback");
+        }
+    }
+
+    /// Bundled definitions must not include installed OS faces: on Windows a
+    /// trailing Segoe UI used to break the craft-fonts ordering regression test.
+    #[test]
+    fn bundled_font_stacks_exclude_system_faces() {
+        for defs in [font_definitions_for(false), font_definitions_for(true)] {
+            for name in ["Segoe UI", "Segoe UI Semibold", SYSTEM_FALLBACK] {
+                assert!(!defs.font_data.contains_key(name), "{name} must be runtime-only");
+                assert!(defs.families.values().all(|stack| !stack.iter().any(|font| font == name)));
+            }
         }
     }
 
