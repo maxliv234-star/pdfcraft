@@ -703,7 +703,7 @@
 	Exclude images smaller than	Исключить изображения меньше
 	No limit	Без ограничений
 	Each image once, named after the document and page. JPEG images are saved unchanged; others as PNG.	Каждое изображение один раз, по имени документа и страницы. JPEG сохраняются без изменений, остальные — как PNG.
-	Plain text in reading order; pages are separated by form feeds.	Обычный текст в порядке чтения; страницы разделены переводами формата.
+	Plain text in reading order; pages are separated by form feeds.	Обычный текст в порядке чтения; страницы разделены символами разрыва страницы.
 	Create {what}	Создать {what}
 	initials	инициалы
 	signature	подпись

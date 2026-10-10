@@ -500,6 +500,16 @@ mod tests {
         assert_eq!(tr(ru, "Certify (invisible signature)"), "Сертифицировать (невидимая подпись)");
     }
 
+    /// Form feeds in text exports are page separators, not file-format conversions.
+    #[test]
+    fn russian_text_export_describes_page_breaks() {
+        let ru = Lang::from_code("ru").expect("ru registered");
+        assert_eq!(
+            tr(ru, "Plain text in reading order; pages are separated by form feeds."),
+            "Обычный текст в порядке чтения; страницы разделены символами разрыва страницы."
+        );
+    }
+
     #[test]
     fn catalog_kinds_are_parsed_and_looked_up() {
         let (c, errors) = Catalog::parse(
