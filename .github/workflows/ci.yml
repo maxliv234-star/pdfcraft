@@ -75,6 +75,20 @@ jobs:
           test "$(query 'PdfCraft RU macOS (Apple Silicon)')" = "missing"
           test "$(query 'No such workflow')" = "missing"
 
+      - name: Verify RU Windows triggers do not duplicate PR builds
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          workflow = Path('.github/workflows/ru-windows.yml').read_text(encoding='utf-8')
+          triggers = workflow.split("\npermissions:", 1)[0]
+          assert "  push:\n    branches: [feature/ru-edition]\n" in triggers, "only integration commits may trigger push builds"
+          assert "  pull_request:\n    branches: [feature/ru-edition]\n" in triggers, "PR builds must remain enabled"
+          assert "  workflow_dispatch:\n" in triggers, "manual build trigger must remain enabled"
+          PY
+
       - name: Format
         if: runner.os == 'Linux'
         run: cargo fmt --all -- --check

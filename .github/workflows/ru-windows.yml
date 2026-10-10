@@ -1,8 +1,10 @@
 name: PdfCraft RU Windows build
 
 on:
+  # PRs from feature/ru-* already build through pull_request; a push here
+  # would otherwise start a duplicate Windows build for the same PR commit.
   push:
-    branches: [feature/ru-edition, 'feature/ru-*']
+    branches: [feature/ru-edition]
   pull_request:
     branches: [feature/ru-edition]
   workflow_dispatch:
