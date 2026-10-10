@@ -223,6 +223,23 @@ pub fn font_definitions_for(prefer_hans: bool) -> FontDefinitions {
         stack.extend(fallback.iter().cloned());
         fonts.families.insert(FontFamily::Name(fam.into()), stack);
     }
+    // Windows system faces are optional last-resort fallbacks; do not override the
+    // cross-platform Ubuntu Light body and Inter heading choices.
+    // System fonts are read only at runtime and are never redistributed.
+    #[cfg(target_os = "windows")]
+    {
+        if let Ok(bytes) = std::fs::read(r"C:\Windows\Fonts\segoeui.ttf") {
+            fonts.font_data.insert("Segoe UI".to_owned(), Arc::new(FontData::from_owned(bytes)));
+            fonts.families.entry(FontFamily::Proportional).or_default().push("Segoe UI".to_owned());
+        }
+
+        if let Ok(bytes) = std::fs::read(r"C:\Windows\Fonts\seguisb.ttf") {
+            fonts.font_data.insert("Segoe UI Semibold".to_owned(), Arc::new(FontData::from_owned(bytes)));
+            for family in ["medium", "semibold"] {
+                fonts.families.entry(FontFamily::Name(family.into())).or_default().push("Segoe UI Semibold".to_owned());
+            }
+        }
+    }
     fonts
 }
 
