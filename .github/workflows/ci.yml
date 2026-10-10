@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    # Run the full workspace suite on the final RU integration commit too, not
+    # only on PR merge refs. Release tags must use this tested branch tip.
+    branches: [main, feature/ru-edition]
   pull_request:
   workflow_dispatch:
   schedule:
