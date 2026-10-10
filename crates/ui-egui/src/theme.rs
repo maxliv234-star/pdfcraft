@@ -185,8 +185,12 @@ pub fn font_definitions_for(prefer_hans: bool) -> FontDefinitions {
     // Do not copy or bundle proprietary Windows system fonts.
     let body_font = if fonts.font_data.contains_key("Ubuntu-Light") { "Ubuntu-Light" } else { "Inter" };
     let proportional = fonts.families.entry(FontFamily::Proportional).or_default();
-    proportional.retain(|face| face != body_font);
+    // Keep Inter as a real fallback for glyphs Ubuntu Light does not cover.
+    proportional.retain(|face| face != body_font && face != "Inter");
     proportional.insert(0, body_font.to_owned());
+    if body_font != "Inter" {
+        proportional.insert(1, "Inter".to_owned());
+    }
     fonts.families.entry(FontFamily::Monospace).or_default().insert(0, "JetBrainsMono".to_owned());
     // The same static bytes pdfcraft-fonts uses for Japanese/Chinese text in PDFs: one copy, not two.
     for face in pdfcraft_fonts::ui_cjk_fonts(prefer_hans) {
@@ -304,6 +308,20 @@ mod tests {
         };
         let (x, y) = (lum(a) + 0.05, lum(b) + 0.05);
         x.max(y) / x.min(y)
+    }
+
+    #[test]
+    fn body_font_keeps_inter_before_optional_script_fallbacks() {
+        let defs = font_definitions();
+        let stack = &defs.families[&FontFamily::Proportional];
+        let body = if defs.font_data.contains_key("Ubuntu-Light") { "Ubuntu-Light" } else { "Inter" };
+        assert_eq!(stack.first().map(String::as_str), Some(body));
+        let inter = stack.iter().position(|name| name == "Inter").expect("Inter must be in the proportional fallback stack");
+        assert_eq!(inter, usize::from(body != "Inter"), "Inter follows Ubuntu Light when it is available");
+        assert_eq!(stack.iter().filter(|name| name.as_str() == "Inter").count(), 1);
+        if let Some(cjk) = stack.iter().position(|name| name.starts_with("BIZ UDPGothic")) {
+            assert!(inter < cjk, "Inter must precede optional Japanese fallback");
+        }
     }
 
     #[test]
